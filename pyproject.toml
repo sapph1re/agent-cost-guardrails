@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-cost-guardrails"
+version = "0.1.0"
+description = "Budget limits and cost guardrails for AI agent frameworks (CrewAI, AutoGen, LangGraph)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "sapph1re", email = "sapph1re@users.noreply.github.com" },
+]
+keywords = ["ai", "agents", "cost", "budget", "guardrails", "crewai", "autogen", "langgraph", "llm", "openai", "anthropic"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+dependencies = [
+    "tiktoken>=0.5.0",
+]
+
+[project.optional-dependencies]
+crewai = ["crewai>=0.50.0"]
+autogen = ["pyautogen>=0.2.0"]
+langgraph = ["langchain-core>=0.1.0"]
+all = ["crewai>=0.50.0", "pyautogen>=0.2.0", "langchain-core>=0.1.0"]
+dev = ["pytest>=7.0", "pytest-cov>=4.0"]
+
+[project.urls]
+Homepage = "https://github.com/sapph1re/agent-cost-guardrails"
+Repository = "https://github.com/sapph1re/agent-cost-guardrails"
+Issues = "https://github.com/sapph1re/agent-cost-guardrails/issues"
+Changelog = "https://github.com/sapph1re/agent-cost-guardrails/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent_cost_guardrails"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
