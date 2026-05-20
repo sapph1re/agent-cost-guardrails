@@ -87,16 +87,53 @@ print(guards.cost_report())
 
 ### AutoGen / AG2
 
+AutoGen agents chat back and forth to solve problems. Without limits, a debugging loop across 20+ turns can cost $20+ before the conversation naturally ends. `AutoGenGuardrails` wraps each agent with budget hooks — every LLM call is checked before it executes, and the conversation stops cleanly when the budget runs out.
+
 ```python
+from autogen import AssistantAgent, UserProxyAgent
 from agent_cost_guardrails.integrations import AutoGenGuardrails
 
-guards = AutoGenGuardrails(max_usd=10.00)
-guards.wrap_agent(assistant_agent)
-guards.wrap_agent(user_proxy_agent)
+def on_budget_alert(threshold, spent, budget):
+    if threshold >= 0.8:
+        print(f"WARNING: {threshold*100:.0f}% of ${budget:.2f} budget used")
 
-# Run your chat - budget enforced automatically
-print(guards.cost_report())
+guards = AutoGenGuardrails(
+    max_usd=5.00,
+    max_tokens_per_call=10000,
+    circuit_breaker_max_violations=3,
+    on_alert=on_budget_alert,
+    default_model="gpt-4o",
+)
+
+assistant = AssistantAgent(
+    name="coder",
+    llm_config={"model": "gpt-4o"},
+    system_message="You are a coding assistant.",
+)
+user_proxy = UserProxyAgent(
+    name="executor",
+    human_input_mode="NEVER",
+    code_execution_config={"work_dir": "workspace"},
+)
+
+guards.wrap_agent(assistant)
+guards.wrap_agent(user_proxy)
+
+try:
+    user_proxy.initiate_chat(
+        assistant,
+        message="Debug this failing test: test_user_auth.py::test_session_refresh",
+        max_turns=30,
+    )
+except Exception as e:
+    print(f"Conversation stopped: {e}")
+finally:
+    report = guards.cost_report()
+    print(f"Total cost: ${report['total_cost_usd']:.4f}")
+    print(f"Turns completed: {report['total_calls']}")
 ```
+
+See [`integrations/autogen_example.py`](integrations/autogen_example.py) for a runnable before/after demo showing a $5.82 unguarded conversation stopped at $0.82 with a $1.00 budget.
 
 ### LangGraph / LangChain
 
@@ -156,4 +193,4 @@ report = guard.cost_report()
 
 ## License
 
-MIT
+MIT -- see [LICENSE](LICENSE) for details.
